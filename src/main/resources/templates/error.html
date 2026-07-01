@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>TaskPilot — Error</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}" />
+</head>
+<body>
+  <div class="dashboard-page">
+    <div class="dashboard-main">
+      <div class="dashboard-hero">
+        <div>
+          <p class="eyebrow">Oops</p>
+          <h1>Something went wrong.</h1>
+          <p class="hero-description">The page you requested cannot be displayed right now. If you were redirected here unexpectedly, try returning to the login page or dashboard.</p>
+          <div class="hero-actions">
+            <a class="btn-primary" th:href="@{/login}">Go to Login</a>
+            <a class="btn-secondary" th:href="@{/dashboard}">Go to Dashboard</a>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">
+          <div>
+            <h2>Error details</h2>
+            <p class="muted">If this persists, check the application logs or contact support.</p>
+          </div>
+        </div>
+        <div class="empty-state">
+          <div class="empty-state-icon">!</div>
+          <h3>Unknown error</h3>
+          <p>Please refresh the page or return to a safe location.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

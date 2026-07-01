@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskPilot · Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}" />
+</head>
+<body class="dashboard-page">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <aside class="dashboard-sidebar" id="dashboardSidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">TP</div>
+      <div>
+        <p class="brand-title">TaskPilot</p>
+        <p class="brand-subtitle">Project workspace</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Primary navigation">
+      <a href="/dashboard" class="nav-item active">
+        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a href="/projects" class="nav-item">
+        <span class="nav-icon"><i class="fas fa-layer-group"></i></span>
+        <span class="nav-label">Projects</span>
+      </a>
+      <a href="/tasks" class="nav-item">
+        <span class="nav-icon"><i class="fas fa-check-circle"></i></span>
+        <span class="nav-label">My Tasks</span>
+      </a>
+      <a href="/team" class="nav-item">
+        <span class="nav-icon"><i class="fas fa-users"></i></span>
+        <span class="nav-label">Team Members</span>
+      </a>
+      <a href="/notifications" class="nav-item">
+        <span class="nav-icon"><i class="fas fa-bell"></i></span>
+        <span class="nav-label">Notifications</span>
+      </a>
+      <a href="/calendar" class="nav-item">
+        <span class="nav-icon"><i class="fas fa-calendar-days"></i></span>
+        <span class="nav-label">Calendar</span>
+      </a>
+      <a href="/analytics" class="nav-item">
+        <span class="nav-icon"><i class="fas fa-chart-pie"></i></span>
+        <span class="nav-label">Analytics</span>
+      </a>
+      <a href="/settings" class="nav-item">
+        <span class="nav-icon"><i class="fas fa-gear"></i></span>
+        <span class="nav-label">Settings</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="profile-mini-card">
+        <div class="profile-avatar" th:text="${user.initials}">Q</div>
+        <div class="profile-details">
+          <p class="profile-name" th:text="${user.username}">Quang</p>
+          <p class="profile-role" th:text="${user.role}">OWNER</p>
+        </div>
+      </div>
+      <a href="/logout" class="logout-button"><i class="fas fa-right-from-bracket"></i> Sign out</a>
+    </div>
+  </aside>
+
+  <main class="dashboard-main">
+    <header class="dashboard-topbar">
+      <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Open navigation">
+        <i class="fas fa-bars"></i>
+      </button>
+
+      <form class="topbar-search" role="search" action="/search" method="get">
+        <label for="searchInput" class="visually-hidden">Search projects or tasks</label>
+        <i class="fas fa-magnifying-glass"></i>
+        <input id="searchInput" name="query" type="search" placeholder="Search projects, tasks, teams..." autocomplete="off" />
+      </form>
+
+      <div class="topbar-actions">
+        <button class="icon-button" type="button" aria-label="Notifications">
+          <i class="fas fa-bell"></i>
+          <span class="badge" id="notificationBadge" th:text="${notificationCount}">4</span>
+        </button>
+
+        <div class="dropdown">
+          <button class="btn-create" id="createButton" type="button" aria-expanded="false">
+            <i class="fas fa-plus"></i>
+            <span class="btn-text">Create</span>
+          </button>
+          <div class="dropdown-menu" id="createMenu">
+            <a href="/projects/new" class="dropdown-item">+ New Project</a>
+            <a href="/tasks/new" class="dropdown-item">+ New Task</a>
+          </div>
+        </div>
+
+        <div class="dropdown avatar-dropdown">
+          <button class="avatar-button" id="avatarButton" type="button" aria-expanded="false">
+            <span class="avatar-img" th:text="${user.initials}">Q</span>
+          </button>
+          <div class="dropdown-menu" id="avatarMenu">
+            <a href="/profile">View profile</a>
+            <a href="/settings">Settings</a>
+            <a href="/logout">Sign out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="dashboard-hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Good to see you again</p>
+        <h1>Welcome back, <span th:text="${user.username}">Quang</span></h1>
+        <p class="hero-description">Manage projects, collaborate with your team and track progress from one clean workspace.</p>
+      </div>
+      <div class="hero-actions">
+        <a href="/projects" class="btn-primary">View projects</a>
+        <a href="/tasks" class="btn-secondary">View tasks</a>
+      </div>
+    </section>
+
+    <section class="summary-grid">
+      <article class="summary-card summary-card-primary">
+        <div class="summary-card-header">
+          <span>Total projects</span>
+          <span class="summary-card-icon"><i class="fas fa-folder-open"></i></span>
+        </div>
+        <h2 id="summaryTotalProjects" th:text="${summary.totalProjects}">8</h2>
+        <p>Projects in your workspace.</p>
+      </article>
+      <article class="summary-card summary-card-blue">
+        <div class="summary-card-header">
+          <span>Total tasks</span>
+          <span class="summary-card-icon"><i class="fas fa-tasks"></i></span>
+        </div>
+        <h2 id="summaryTotalTasks" th:text="${summary.totalTasks}">54</h2>
+        <p>Tasks assigned across active projects.</p>
+      </article>
+      <article class="summary-card summary-card-green">
+        <div class="summary-card-header">
+          <span>Completed tasks</span>
+          <span class="summary-card-icon"><i class="fas fa-check-circle"></i></span>
+        </div>
+        <h2 id="summaryCompletedTasks" th:text="${summary.completedTasks}">31</h2>
+        <p>Tasks finished this week.</p>
+      </article>
+      <article class="summary-card summary-card-orange">
+        <div class="summary-card-header">
+          <span>Pending tasks</span>
+          <span class="summary-card-icon"><i class="fas fa-hourglass-half"></i></span>
+        </div>
+        <h2 id="summaryPendingTasks" th:text="${summary.pendingTasks}">14</h2>
+        <p>Tasks waiting for attention.</p>
+      </article>
+      <article class="summary-card summary-card-purple">
+        <div class="summary-card-header">
+          <span>Team members</span>
+          <span class="summary-card-icon"><i class="fas fa-user-group"></i></span>
+        </div>
+        <h2 id="summaryTeamMembers" th:text="${summary.teamMembers}">12</h2>
+        <p>People collaborating on your projects.</p>
+      </article>
+    </section>
+
+    <div class="dashboard-grid layout-two-column">
+      <div class="dashboard-column">
+        <section class="panel card recent-projects-panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-label">Recent projects</p>
+              <h2>Project pipeline</h2>
+            </div>
+            <button class="icon-button" type="button" aria-label="Refresh projects"><i class="fas fa-arrows-rotate"></i></button>
+          </div>
+          <div class="panel-content">
+            <div class="project-cards" th:if="${#lists.isNotEmpty(recentProjects)}">
+              <article class="project-card" th:each="project : ${recentProjects}">
+                <div class="project-card-header">
+                  <div>
+                    <p class="project-badge" th:text="${project.status}">Active</p>
+                    <h3 th:text="${project.name}">Mobile Redesign</h3>
+                  </div>
+                  <span class="project-due" th:text="${project.dueDate}">Jun 28</span>
+                </div>
+                <p class="project-description" th:text="${project.description}">Redesign the mobile app with new onboarding flows and priority tracking.</p>
+                <div class="project-meta">
+                  <div class="progress-wrapper">
+                    <span class="progress-label">Progress</span>
+                    <div class="progress-bar">
+                      <div class="progress-fill" th:style="${'width:' + project.progress + '%'}"></div>
+                    </div>
+                  </div>
+                  <div class="project-counters">
+                    <span><strong th:text="${project.taskCount}">18</strong> tasks</span>
+                  </div>
+                </div>
+                <div class="project-footer">
+                  <div class="avatar-stack">
+                    <img src="/images/avatar-1.jpg" alt="" class="avatar" />
+                    <img src="/images/avatar-2.jpg" alt="" class="avatar" />
+                    <img src="/images/avatar-3.jpg" alt="" class="avatar" />
+                  </div>
+                  <div class="project-actions">
+                    <button class="text-button">Open</button>
+                    <button class="text-button">Edit</button>
+                    <button class="text-button text-danger">Delete</button>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <div class="empty-state" th:if="${#lists.isEmpty(recentProjects)}">
+              <div class="empty-state-icon"><i class="fas fa-layer-group"></i></div>
+              <h3>No projects yet</h3>
+              <p>Create your first project to keep your work organized and your team aligned.</p>
+              <a href="/projects/new" class="btn-primary">Start a project</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel card tasks-panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-label">Task management</p>
+              <h2>Assigned tasks</h2>
+            </div>
+            <a href="/tasks" class="text-button">View all</a>
+          </div>
+          <div class="panel-content table-wrapper">
+            <table class="tasks-table">
+              <thead>
+                <tr>
+                  <th>Task title</th>
+                  <th>Assignee</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Due date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody th:if="${#lists.isNotEmpty(recentTasks)}" th:each="task : ${recentTasks}">
+                <tr>
+                  <td>
+                    <p class="task-title" th:text="${task.title}">Onboard screen copy</p>
+                  </td>
+                  <td>
+                    <div class="task-assignee">
+                      <span class="avatar avatar-small" th:text="${task.assigneeInitials}">MK</span>
+                      <span th:text="${task.assigneeName}">Minh K.</span>
+                    </div>
+                  </td>
+                  <td><span class="badge priority-badge" th:text="${task.priority}">HIGH</span></td>
+                  <td><span class="badge status-badge" th:text="${task.status}">IN_PROGRESS</span></td>
+                  <td th:text="${task.dueDate}">Jul 10</td>
+                  <td class="task-actions">
+                    <button class="icon-button small"><i class="fas fa-pen"></i></button>
+                    <button class="icon-button small"><i class="fas fa-user-plus"></i></button>
+                    <button class="icon-button small"><i class="fas fa-ellipsis-h"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+              <tbody th:if="${#lists.isEmpty(recentTasks)}">
+                <tr>
+                  <td colspan="6" class="empty-table-state">
+                    <div class="empty-state-icon"><i class="fas fa-tasks"></i></div>
+                    <p>No tasks assigned</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel card team-panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-label">Team members</p>
+              <h2>Collaborators</h2>
+            </div>
+            <a href="/team/invite" class="text-button">Invite member</a>
+          </div>
+          <div class="panel-content team-list" id="teamMembersList">
+            <div class="team-row" th:each="member : ${teamMembers}">
+              <div class="team-member">
+                <span class="avatar avatar-small" th:text="${member.initials}">AN</span>
+                <div>
+                  <p class="team-name" th:text="${member.name}">An Nguyen</p>
+                  <p class="team-email" th:text="${member.email}">an@example.com</p>
+                </div>
+              </div>
+              <div class="team-badges">
+                <span class="badge role-badge" th:text="${member.role}">ADMIN</span>
+                <span class="team-task-count" th:text="${member.taskCount} + ' tasks'"></span>
+              </div>
+              <div class="team-actions">
+                <button class="text-button">Change role</button>
+                <button class="text-button text-danger">Remove</button>
+              </div>
+            </div>
+            <div class="empty-state" th:if="${#lists.isEmpty(teamMembers)}">
+              <div class="empty-state-icon"><i class="fas fa-user-friends"></i></div>
+              <h3>No team members yet</h3>
+              <p>Invite your first collaborator and start building with your team.</p>
+              <a href="/team/invite" class="btn-primary">Invite member</a>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="dashboard-column sidebar-panel">
+        <section class="panel card notifications-panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-label">Notifications</p>
+              <h2>Recent alerts</h2>
+            </div>
+            <a href="/notifications" class="text-button">See all</a>
+          </div>
+          <div class="panel-content notifications-list" id="notificationList">
+            <article class="notification-card" th:each="note : ${notifications}">
+              <div class="notification-icon"><i class="fas fa-bell"></i></div>
+              <div>
+                <p class="notification-title" th:text="${note.title}">Assigned new task</p>
+                <p class="notification-meta" th:text="${note.subtitle}">You were added to "Dashboard redesign"</p>
+              </div>
+              <span class="notification-time" th:text="${note.time}">2h ago</span>
+            </article>
+            <div class="empty-state" th:if="${#lists.isEmpty(notifications)}">
+              <div class="empty-state-icon"><i class="fas fa-bell-slash"></i></div>
+              <h3>No notifications</h3>
+              <p>Activity will appear here once your team starts interacting.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel card activity-panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-label">Activity timeline</p>
+              <h2>Recent actions</h2>
+            </div>
+          </div>
+          <div class="panel-content activity-list" id="activityTimeline">
+            <div class="activity-item" th:each="item : ${activityTimeline}">
+              <span class="activity-icon"><i class="fas fa-history"></i></span>
+              <div>
+                <p class="activity-text" th:text="${item.message}">Quang created project Mobile Redesign</p>
+                <span class="activity-meta" th:text="${item.time}">1h ago</span>
+              </div>
+            </div>
+            <div class="empty-state" th:if="${#lists.isEmpty(activityTimeline)}">
+              <div class="empty-state-icon"><i class="fas fa-clock"></i></div>
+              <h3>No activity yet</h3>
+              <p>Track recent project and task updates in this timeline.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel card analytics-panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-label">Analytics</p>
+              <h2>Team health</h2>
+            </div>
+          </div>
+          <div class="panel-content analytics-grid">
+            <article class="analytics-card">
+              <div class="analytics-icon"><i class="fas fa-chart-line"></i></div>
+              <p class="analytics-title">Tasks completed this week</p>
+              <strong th:text="${analytics.tasksThisWeek}">26</strong>
+            </article>
+            <article class="analytics-card">
+              <div class="analytics-icon"><i class="fas fa-percent"></i></div>
+              <p class="analytics-title">Project progress</p>
+              <strong th:text="${analytics.projectProgress}">73%</strong>
+            </article>
+            <article class="analytics-card">
+              <div class="analytics-icon"><i class="fas fa-layer-group"></i></div>
+              <p class="analytics-title">Tasks by status</p>
+              <strong th:text="${analytics.statusBreakdown}">12 / 24 / 18</strong>
+            </article>
+            <article class="analytics-card">
+              <div class="analytics-icon"><i class="fas fa-user-check"></i></div>
+              <p class="analytics-title">Team productivity</p>
+              <strong th:text="${analytics.productivity}">89%</strong>
+            </article>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script th:src="@{/js/dashboard-ui.js}"></script>
+</body>
+</html>

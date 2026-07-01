@@ -8,9 +8,21 @@ public class ViewController {
 
     @GetMapping("/login")
     public String login() {
-
-        System.out.println("===== LOGIN PAGE CALLED =====");
-
         return "login";
+    }
+
+    @GetMapping("/register")
+    public String register() {
+        return "register";
+    }
+
+    @GetMapping("/dashboard")
+    public String dashboard() {
+        return "dashboard";
+    }
+
+    @GetMapping("/error")
+    public String error() {
+        return "error";
     }
 }

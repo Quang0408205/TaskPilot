@@ -55,12 +55,9 @@ pwInput.addEventListener('input', () => {
 
 /* ── Login submit ─────────────────────────────────────── */
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
+form.addEventListener('submit', (e) => {
   let valid = true;
 
-  // Email validation
   if (!emailInput.value.trim()) {
     setError(emailInput, emailError, 'Email is required.');
     valid = false;
@@ -71,7 +68,6 @@ form.addEventListener('submit', async (e) => {
     clearError(emailInput, emailError);
   }
 
-  // Password validation
   if (!pwInput.value) {
     setError(pwInput, pwError, 'Password is required.');
     valid = false;
@@ -82,43 +78,8 @@ form.addEventListener('submit', async (e) => {
     clearError(pwInput, pwError);
   }
 
-  if (!valid) return;
-
-  // Loading state
-  submitBtn.disabled = true;
-  btnText.classList.add('hidden');
-  btnLoader.classList.remove('hidden');
-
-  try {
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email:    emailInput.value,
-        password: pwInput.value,
-      }),
-    });
-
-    const result = await response.text();
-
-    if (response.ok) {
-      btnText.textContent        = '✓ Signed in!';
-      submitBtn.style.background = '#22c55e';
-      setTimeout(() => { window.location.href = '/dashboard'; }, 1000);
-    } else {
-      alert(result);
-    }
-  } catch (error) {
-    console.error(error);
-    alert('Server Error');
-  } finally {
-    btnLoader.classList.add('hidden');
-    btnText.classList.remove('hidden');
-    submitBtn.disabled = false;
-    setTimeout(() => {
-      btnText.textContent        = 'Sign In';
-      submitBtn.style.background = '';
-    }, 2000);
+  if (!valid) {
+    e.preventDefault();
   }
 });
 

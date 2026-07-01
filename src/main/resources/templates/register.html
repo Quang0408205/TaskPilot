@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskPilot – Register</title>
+  <link rel="stylesheet" th:href="@{/css/login.css}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="login-card">
+
+      <div class="card-left">
+        <div class="brand">
+          <div class="brand-logo">
+            <i class="fa-solid fa-square-check"></i>
+          </div>
+          <span class="brand-name">Task<span class="accent">Pilot</span></span>
+        </div>
+
+        <div class="headline">
+          <h1>Join TaskPilot.<br /><span class="accent">Start organizing.</span></h1>
+          <p class="sub">Create an account to track tasks, collaborate with your team, and stay productive.</p>
+        </div>
+
+        <div class="illustration">
+          <svg viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="60" y="40" width="300" height="200" rx="14" fill="#e8ecff" />
+            <rect x="72" y="52" width="276" height="176" rx="8" fill="#fff" />
+            <rect x="88" y="68" width="120" height="10" rx="5" fill="#c7ceff" />
+            <rect x="88" y="86" width="80" height="8" rx="4" fill="#e2e5ff" />
+            <rect x="88" y="106" width="240" height="6" rx="3" fill="#eef0ff" />
+            <rect x="88" y="118" width="200" height="6" rx="3" fill="#eef0ff" />
+            <rect x="88" y="130" width="220" height="6" rx="3" fill="#eef0ff" />
+            <rect x="88" y="148" width="70" height="64" rx="8" fill="#f3f4ff" stroke="#d6d9ff" stroke-width="1" />
+            <rect x="96" y="156" width="40" height="5" rx="2.5" fill="#6b75f2" />
+            <rect x="96" y="166" width="50" height="4" rx="2" fill="#c7ceff" />
+            <rect x="96" y="175" width="45" height="4" rx="2" fill="#c7ceff" />
+            <circle cx="104" cy="196" r="6" fill="#6b75f2" opacity=".25" />
+            <circle cx="104" cy="196" r="3" fill="#6b75f2" />
+            <rect x="168" y="148" width="70" height="64" rx="8" fill="#f3f4ff" stroke="#d6d9ff" stroke-width="1" />
+            <rect x="176" y="156" width="40" height="5" rx="2.5" fill="#a78bfa" />
+            <rect x="176" y="166" width="50" height="4" rx="2" fill="#c7ceff" />
+            <rect x="176" y="175" width="35" height="4" rx="2" fill="#c7ceff" />
+            <circle cx="184" cy="196" r="6" fill="#a78bfa" opacity=".25" />
+            <circle cx="184" cy="196" r="3" fill="#a78bfa" />
+            <rect x="248" y="148" width="70" height="64" rx="8" fill="#f3f4ff" stroke="#d6d9ff" stroke-width="1" />
+            <rect x="256" y="156" width="40" height="5" rx="2.5" fill="#34d399" />
+            <rect x="256" y="166" width="50" height="4" rx="2" fill="#c7ceff" />
+            <rect x="256" y="175" width="45" height="4" rx="2" fill="#c7ceff" />
+            <circle cx="264" cy="196" r="6" fill="#34d399" opacity=".25" />
+            <polyline points="261,196 263,198.5 268,193" fill="none" stroke="#34d399" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            <rect x="188" y="240" width="44" height="10" rx="4" fill="#d4d8ff" />
+            <rect x="170" y="250" width="80" height="8" rx="4" fill="#bfc4f7" />
+          </svg>
+        </div>
+      </div>
+
+      <div class="card-right">
+        <h2>Create your account</h2>
+        <p class="form-sub">Register now to access your dashboard and manage tasks.</p>
+
+        <form id="registerForm" method="post" novalidate>
+          <div class="field-group">
+            <label for="username">Username</label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-user"></i>
+              <input id="username" type="text" name="username" placeholder="Choose a username" autocomplete="username" />
+            </div>
+            <span class="field-error" id="usernameError"></span>
+          </div>
+
+          <div class="field-group">
+            <label for="email">Email</label>
+            <div class="input-wrap">
+              <i class="fa-regular fa-envelope"></i>
+              <input id="email" type="text" name="email" placeholder="Enter your email" autocomplete="email" />
+            </div>
+            <span class="field-error" id="emailError"></span>
+          </div>
+
+          <div class="field-group">
+            <label for="password">Password</label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-lock"></i>
+              <input id="password" type="password" name="password" placeholder="Create a password" autocomplete="new-password" />
+              <button type="button" class="toggle-pw" id="togglePw" aria-label="Show password">
+                <i class="fa-regular fa-eye" id="eyeIcon"></i>
+              </button>
+            </div>
+            <span class="field-error" id="passwordError"></span>
+          </div>
+
+          <button type="submit" class="btn-primary" id="submitBtn">
+            <span id="btnText">Register</span>
+            <span id="btnLoader" class="hidden"><i class="fa-solid fa-spinner fa-spin"></i></span>
+          </button>
+
+          <p class="register-link">Already have an account? <a href="/login" class="link">Sign in</a></p>
+          <p class="field-error" id="formMessage" style="margin-top: 12px;"></p>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <script th:src="@{/js/register.js}"></script>
+</body>
+</html>

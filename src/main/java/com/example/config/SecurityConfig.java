@@ -1,8 +1,15 @@
 package com.example.config;
 
+import com.example.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -19,6 +26,7 @@ public class SecurityConfig {
                                 "/",
                                 "/login",
                                 "/register",
+                                "/error",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
@@ -31,9 +39,11 @@ public class SecurityConfig {
 
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .loginProcessingUrl("/api/auth/login")  // POST từ form HTML
-                        .defaultSuccessUrl("/dashboard", true)  // redirect sau login thành công
-                        .failureUrl("/login?error=true")        // login sai thì về đây
+                        .loginProcessingUrl("/perform_login")
+                        .usernameParameter("email")
+                        .passwordParameter("password")
+                        .defaultSuccessUrl("/dashboard", true)
+                        .failureUrl("/login?error=true")
                         .permitAll()
                 )
 
@@ -46,5 +56,30 @@ public class SecurityConfig {
                 )
 
                 .build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService(UserRepository userRepository) {
+        return username -> userRepository.findByEmail(username)
+                .map(user -> org.springframework.security.core.userdetails.User.builder()
+                        .username(user.getEmail())
+                        .password(user.getPassword())
+                        .roles("USER")
+                        .build())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http,
+                                                       PasswordEncoder passwordEncoder,
+                                                       UserDetailsService userDetailsService) throws Exception {
+        AuthenticationManagerBuilder authBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        authBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
+        return authBuilder.build();
     }
 }
