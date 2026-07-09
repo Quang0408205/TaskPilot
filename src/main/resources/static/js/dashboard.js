@@ -1,8 +1,10 @@
 const projectForm = document.getElementById('projectForm');
+const projectIdInput = document.getElementById('projectId');
 const projectNameInput = document.getElementById('projectName');
 const projectDescriptionInput = document.getElementById('projectDescription');
 const projectList = document.getElementById('projectList');
 const projectMessage = document.getElementById('projectMessage');
+const projectSubmitButton = document.getElementById('projectSubmitButton');
 
 const projectCountDisplay = document.getElementById('projectCount');
 const inviteCountDisplay = document.getElementById('inviteCount');
@@ -10,6 +12,12 @@ const inviteCountDisplay = document.getElementById('inviteCount');
 function setMessage(message, color = '#22c55e') {
   projectMessage.textContent = message;
   projectMessage.style.color = color;
+}
+
+function resetProjectForm() {
+  projectForm.reset();
+  projectIdInput.value = '';
+  projectSubmitButton.textContent = 'Create project';
 }
 
 async function fetchProjects() {
@@ -27,12 +35,16 @@ async function fetchProjects() {
 }
 
 function updateOverview(projects) {
-  projectCountDisplay.textContent = projects.length;
-  const inviteCount = projects.reduce((count, project) => {
-    const members = project.members || [];
-    return count + members.filter(member => member.role && member.role.toUpperCase() !== 'OWNER').length;
-  }, 0);
-  inviteCountDisplay.textContent = inviteCount;
+  if (projectCountDisplay) {
+    projectCountDisplay.textContent = projects.length;
+  }
+  if (inviteCountDisplay) {
+    const inviteCount = projects.reduce((count, project) => {
+      const members = project.members || [];
+      return count + members.filter(member => member.role && member.role.toUpperCase() !== 'OWNER').length;
+    }, 0);
+    inviteCountDisplay.textContent = inviteCount;
+  }
 }
 
 function createMemberList(members) {
@@ -62,6 +74,11 @@ function renderProjects(projects) {
       <div class="project-members">
         <h4>Members</h4>
         <ul>${createMemberList(project.members)}</ul>
+      </div>
+      <div class="project-actions" style="display:flex; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">
+        <button type="button" class="text-button" data-action="join" data-id="${project.id}">Join</button>
+        <button type="button" class="text-button" data-action="edit" data-id="${project.id}" data-name="${project.name}" data-description="${project.description || ''}">Edit</button>
+        <button type="button" class="text-button text-danger" data-action="delete" data-id="${project.id}">Delete</button>
       </div>
       <form class="invite-form" onsubmit="inviteMember(event, ${project.id})">
         <label for="inviteEmail-${project.id}">Invite by email</label>
@@ -106,12 +123,57 @@ async function inviteMember(event, projectId) {
   }
 }
 
+async function joinProject(projectId) {
+  try {
+    const response = await fetch(`/api/projects/${projectId}/join`, { method: 'POST' });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      setMessage(body.message || 'Unable to join project.', '#dc2626');
+      return;
+    }
+
+    setMessage('You joined the project successfully.');
+    fetchProjects();
+  } catch (error) {
+    setMessage('Unable to join project. Please try again.', '#dc2626');
+  }
+}
+
+async function deleteProject(projectId) {
+  if (!window.confirm('Delete this project?')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/projects/${projectId}`, { method: 'DELETE' });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      setMessage(body.message || 'Unable to delete project.', '#dc2626');
+      return;
+    }
+
+    setMessage('Project deleted successfully.');
+    fetchProjects();
+  } catch (error) {
+    setMessage('Delete project failed. Please try again.', '#dc2626');
+  }
+}
+
+function startEditProject(projectId, name, description) {
+  projectIdInput.value = projectId;
+  projectNameInput.value = name;
+  projectDescriptionInput.value = description;
+  projectSubmitButton.textContent = 'Save changes';
+  projectNameInput.focus();
+}
+
 projectForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   setMessage('');
 
   const name = projectNameInput.value.trim();
   const description = projectDescriptionInput.value.trim();
+  const projectId = projectIdInput.value;
 
   if (!name) {
     setMessage('Project name is required.', '#dc2626');
@@ -119,24 +181,47 @@ projectForm.addEventListener('submit', async (event) => {
   }
 
   try {
-    const response = await fetch('/api/projects', {
-      method: 'POST',
+    const response = await fetch(projectId ? `/api/projects/${projectId}` : '/api/projects', {
+      method: projectId ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, description }),
     });
 
-    const body = await response.json();
+    const body = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setMessage(body.message || 'Unable to create project.', '#dc2626');
+      setMessage(body.message || (projectId ? 'Unable to update project.' : 'Unable to create project.'), '#dc2626');
       return;
     }
 
-    setMessage('Project created successfully.');
-    projectForm.reset();
+    setMessage(projectId ? 'Project updated successfully.' : 'Project created successfully.');
+    resetProjectForm();
     fetchProjects();
   } catch (error) {
-    setMessage('Create project failed. Please try again.', '#dc2626');
+    setMessage(projectId ? 'Update project failed. Please try again.' : 'Create project failed. Please try again.', '#dc2626');
   }
 });
 
+projectList.addEventListener('click', (event) => {
+  const button = event.target.closest('button[data-action]');
+  if (!button) {
+    return;
+  }
+
+  const action = button.getAttribute('data-action');
+  const id = button.getAttribute('data-id');
+
+  if (action === 'delete') {
+    deleteProject(id);
+  }
+
+  if (action === 'join') {
+    joinProject(id);
+  }
+
+  if (action === 'edit') {
+    startEditProject(id, button.getAttribute('data-name'), button.getAttribute('data-description'));
+  }
+});
+
+resetProjectForm();
 fetchProjects();

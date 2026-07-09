@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskPilot · Projects</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}" />
+  <link rel="stylesheet" th:href="@{/css/projects.css}" />
+</head>
+<body class="dashboard-page">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <aside class="dashboard-sidebar" id="dashboardSidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">TP</div>
+      <div>
+        <p class="brand-title">TaskPilot</p>
+        <p class="brand-subtitle">Project workspace</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Primary navigation">
+      <a href="/dashboard" class="nav-item">
+        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a href="/projects" class="nav-item active">
+        <span class="nav-icon"><i class="fas fa-layer-group"></i></span>
+        <span class="nav-label">Projects</span>
+      </a>
+      <a href="/tasks" class="nav-item">
+        <span class="nav-icon"><i class="fas fa-check-circle"></i></span>
+        <span class="nav-label">My Tasks</span>
+      </a>
+      <a href="/team" class="nav-item">
+        <span class="nav-icon"><i class="fas fa-users"></i></span>
+        <span class="nav-label">Team Members</span>
+      </a>
+      <a href="/notifications" class="nav-item">
+        <span class="nav-icon"><i class="fas fa-bell"></i></span>
+        <span class="nav-label">Notifications</span>
+      </a>
+      <a href="/calendar" class="nav-item">
+        <span class="nav-icon"><i class="fas fa-calendar-days"></i></span>
+        <span class="nav-label">Calendar</span>
+      </a>
+      <a href="/analytics" class="nav-item">
+        <span class="nav-icon"><i class="fas fa-chart-pie"></i></span>
+        <span class="nav-label">Analytics</span>
+      </a>
+      <a href="/settings" class="nav-item">
+        <span class="nav-icon"><i class="fas fa-gear"></i></span>
+        <span class="nav-label">Settings</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="profile-mini-card">
+        <div class="profile-avatar" th:text="${user.initials}">Q</div>
+        <div class="profile-details">
+          <p class="profile-name" th:text="${user.username}">Quang</p>
+          <p class="profile-role" th:text="${user.role}">OWNER</p>
+        </div>
+      </div>
+      <a href="/logout" class="logout-button"><i class="fas fa-right-from-bracket"></i> Sign out</a>
+    </div>
+  </aside>
+
+  <main class="dashboard-main">
+    <header class="dashboard-topbar">
+      <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Open navigation">
+        <i class="fas fa-bars"></i>
+      </button>
+
+      <form class="topbar-search" role="search" action="/search" method="get">
+        <label for="searchInput" class="visually-hidden">Search projects</label>
+        <i class="fas fa-magnifying-glass"></i>
+        <input id="searchInput" name="query" type="search" placeholder="Search projects..." autocomplete="off" />
+      </form>
+
+      <div class="topbar-actions">
+        <button class="icon-button" type="button" aria-label="Notifications">
+          <i class="fas fa-bell"></i>
+          <span class="badge" id="notificationBadge" th:text="${notificationCount}">0</span>
+        </button>
+
+        <button class="btn-create" id="newProjectBtn" type="button">
+          <i class="fas fa-plus"></i>
+          <span class="btn-text">New Project</span>
+        </button>
+
+        <div class="dropdown avatar-dropdown">
+          <button class="avatar-button" id="avatarButton" type="button" aria-expanded="false">
+            <span class="avatar-img" th:text="${user.initials}">Q</span>
+          </button>
+          <div class="dropdown-menu" id="avatarMenu">
+            <a href="/profile">View profile</a>
+            <a href="/settings">Settings</a>
+            <a href="/logout">Sign out</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="projects-hero">
+      <div class="hero-copy">
+        <h1>Projects</h1>
+        <p class="hero-description">Create, manage, and collaborate on projects with your team.</p>
+      </div>
+    </section>
+
+    <section class="panel card projects-panel">
+      <div class="panel-header">
+        <div>
+          <p class="panel-label">Project Management</p>
+          <h2>All Projects</h2>
+        </div>
+        <div class="panel-actions">
+          <input type="text" id="projectSearch" placeholder="Filter projects..." class="search-input" />
+        </div>
+      </div>
+      <div class="panel-content">
+        <div id="projectsContainer" class="projects-grid">
+          <!-- Projects will be loaded here -->
+        </div>
+        <div id="projectMessage" class="message-box"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal untuk Create/Edit Project -->
+  <div id="projectModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Create New Project</h2>
+        <button class="modal-close" id="closeModal" type="button">&times;</button>
+      </div>
+      <form id="projectForm" class="modal-form">
+        <input type="hidden" id="projectId" name="projectId" />
+        
+        <div class="form-group">
+          <label for="projectName">Project Name</label>
+          <input id="projectName" name="name" type="text" placeholder="Enter project name" required />
+          <span class="form-error" id="nameError"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="projectDescription">Description</label>
+          <textarea id="projectDescription" name="description" placeholder="Enter project description" rows="4"></textarea>
+          <span class="form-error" id="descriptionError"></span>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancelBtn">Cancel</button>
+          <button type="submit" class="btn-primary" id="submitBtn">Create Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal untuk Detail Project -->
+  <div id="detailModal" class="modal" style="display: none;">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h2 id="detailTitle">Project Details</h2>
+        <button class="modal-close" id="closeDetail" type="button">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-section">
+          <h3>Project Information</h3>
+          <div class="detail-row">
+            <span class="detail-label">Name:</span>
+            <span id="detailName"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Description:</span>
+            <span id="detailDescription"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Created By:</span>
+            <span id="detailCreatedBy"></span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>Team Members</h3>
+          <div id="teamMembersList" class="team-members-list">
+            <!-- Members will be loaded here -->
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>Invite Member</h3>
+          <div class="invite-form-inline">
+            <input type="email" id="inviteEmail" placeholder="Enter member email" />
+            <button type="button" class="btn-secondary" id="inviteBtn">Invite</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="closeDetail2">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script th:src="@{/js/projects-ui.js}"></script>
+</body>
+</html>

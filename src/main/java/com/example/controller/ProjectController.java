@@ -28,26 +28,67 @@ public class ProjectController {
 
     @GetMapping
     public ResponseEntity<List<ProjectResponse>> getMyProjects(@AuthenticationPrincipal UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+        User user = getAuthenticatedUser(currentUser);
         List<Project> projects = projectService.getProjectsForUser(user);
         return ResponseEntity.ok(projects.stream().map(this::toResponse).collect(Collectors.toList()));
+    }
+
+    @GetMapping("/{projectId}")
+    public ResponseEntity<ProjectResponse> getProject(@AuthenticationPrincipal UserDetails currentUser,
+                                                     @PathVariable Long projectId) {
+        User user = getAuthenticatedUser(currentUser);
+        Project project = projectService.getProjectById(projectId);
+        if (!project.getCreatedBy().getId().equals(user.getId())) {
+            throw new RuntimeException("You are not allowed to view this project");
+        }
+        return ResponseEntity.ok(toResponse(project));
     }
 
     @PostMapping
     public ResponseEntity<ProjectResponse> createProject(@AuthenticationPrincipal UserDetails currentUser,
                                                          @RequestBody ProjectDto projectDto) {
-        User owner = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+        User owner = getAuthenticatedUser(currentUser);
         Project project = projectService.createProject(projectDto, owner);
         return ResponseEntity.ok(toResponse(project));
     }
 
+    @PutMapping("/{projectId}")
+    public ResponseEntity<ProjectResponse> updateProject(@AuthenticationPrincipal UserDetails currentUser,
+                                                         @PathVariable Long projectId,
+                                                         @RequestBody ProjectDto projectDto) {
+        User currentUserEntity = getAuthenticatedUser(currentUser);
+        Project project = projectService.updateProject(projectId, projectDto, currentUserEntity);
+        return ResponseEntity.ok(toResponse(project));
+    }
+
+    @DeleteMapping("/{projectId}")
+    public ResponseEntity<Void> deleteProject(@AuthenticationPrincipal UserDetails currentUser,
+                                               @PathVariable Long projectId) {
+        User currentUserEntity = getAuthenticatedUser(currentUser);
+        projectService.deleteProject(projectId, currentUserEntity);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{projectId}/invite")
-    public ResponseEntity<ProjectResponse> inviteMember(@PathVariable Long projectId,
+    public ResponseEntity<ProjectResponse> inviteMember(@AuthenticationPrincipal UserDetails currentUser,
+                                                        @PathVariable Long projectId,
                                                         @RequestBody InviteRequest inviteRequest) {
-        ProjectMember member = projectService.inviteMember(projectId, inviteRequest.getEmail());
+        User inviter = getAuthenticatedUser(currentUser);
+        ProjectMember member = projectService.inviteMember(projectId, inviteRequest.getEmail(), inviter);
         return ResponseEntity.ok(toResponse(member.getProject()));
+    }
+
+    @PostMapping("/{projectId}/join")
+    public ResponseEntity<ProjectResponse> joinProject(@AuthenticationPrincipal UserDetails currentUser,
+                                                       @PathVariable Long projectId) {
+        User member = getAuthenticatedUser(currentUser);
+        ProjectMember projectMember = projectService.joinProject(projectId, member);
+        return ResponseEntity.ok(toResponse(projectMember.getProject()));
+    }
+
+    private User getAuthenticatedUser(UserDetails currentUser) {
+        return userRepository.findByEmail(currentUser.getUsername())
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
     }
 
     private ProjectResponse toResponse(Project project) {

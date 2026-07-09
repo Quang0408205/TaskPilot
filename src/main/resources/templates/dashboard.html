@@ -166,6 +166,33 @@
       </article>
     </section>
 
+    <section class="panel card" style="margin: 1.5rem 0;">
+      <div class="panel-header">
+        <div>
+          <p class="panel-label">Project management</p>
+          <h2>Create and manage projects</h2>
+        </div>
+      </div>
+      <div class="panel-content">
+        <form id="projectForm" class="project-form">
+          <input type="hidden" id="projectId" name="projectId" />
+          <div class="invite-row" style="align-items: end; gap: 1rem; flex-wrap: wrap;">
+            <div style="flex: 1 1 220px;">
+              <label for="projectName">Project name</label>
+              <input id="projectName" name="name" type="text" placeholder="Project name" required />
+            </div>
+            <div style="flex: 2 1 320px;">
+              <label for="projectDescription">Description</label>
+              <input id="projectDescription" name="description" type="text" placeholder="Short description" />
+            </div>
+            <button id="projectSubmitButton" type="submit" class="btn-secondary">Create project</button>
+          </div>
+        </form>
+        <p id="projectMessage" style="margin-top: 0.75rem;"></p>
+        <div id="projectList" class="project-list" style="margin-top: 1rem;"></div>
+      </div>
+    </section>
+
     <div class="dashboard-grid layout-two-column">
       <div class="dashboard-column">
         <section class="panel card recent-projects-panel">

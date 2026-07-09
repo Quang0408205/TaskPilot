@@ -12,5 +12,8 @@ public interface ProjectService {
     Project getProjectById(Long id);
     List<Project> getProjectsForUser(User user);
     List<ProjectMember> getProjectMembers(Project project);
-    ProjectMember inviteMember(Long projectId, String email);
+    Project updateProject(Long id, ProjectDto projectDto, User currentUser);
+    void deleteProject(Long id, User currentUser);
+    ProjectMember inviteMember(Long projectId, String email, User currentUser);
+    ProjectMember joinProject(Long projectId, User currentUser);
 }

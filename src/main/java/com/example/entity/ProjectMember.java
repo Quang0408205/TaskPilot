@@ -35,6 +35,10 @@ public class ProjectMember {
     @Enumerated(EnumType.STRING)
     private ProjectMemberRole role;
 
+    @Column(name = "is_active", nullable = false)
+    @Builder.Default
+    private boolean active = true;
+
     @CreationTimestamp
     @Column(name="joined_at", updatable = false)
     private LocalDateTime joinedAt;

@@ -43,38 +43,101 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public Project getProjectById(Long id) {
-        return projectRepository.findById(id)
+        Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
+        if (Boolean.TRUE.equals(project.getDeleted())) {
+            throw new RuntimeException("Project not found");
+        }
+        return project;
     }
 
     @Override
     public List<Project> getProjectsForUser(User user) {
         return projectMemberRepository.findByUser(user).stream()
+                .filter(ProjectMember::isActive)
                 .map(ProjectMember::getProject)
+                .filter(project -> !Boolean.TRUE.equals(project.getDeleted()))
                 .distinct()
                 .toList();
     }
 
     @Override
     public List<ProjectMember> getProjectMembers(Project project) {
-        return projectMemberRepository.findByProject(project);
+        return projectMemberRepository.findByProject(project).stream()
+                .filter(ProjectMember::isActive)
+                .toList();
     }
 
     @Override
     @Transactional
-    public ProjectMember inviteMember(Long projectId, String email) {
+    public Project updateProject(Long id, ProjectDto projectDto, User currentUser) {
+        Project project = getProjectById(id);
+        ensureCanManage(project, currentUser);
+
+        project.setName(projectDto.getName());
+        project.setDescription(projectDto.getDescription());
+        return projectRepository.save(project);
+    }
+
+    @Override
+    @Transactional
+    public void deleteProject(Long id, User currentUser) {
+        Project project = getProjectById(id);
+        ensureCanManage(project, currentUser);
+
+        project.setDeleted(true);
+        projectRepository.save(project);
+    }
+
+    @Override
+    @Transactional
+    public ProjectMember inviteMember(Long projectId, String email, User currentUser) {
         Project project = getProjectById(projectId);
+        ensureCanInvite(project, currentUser);
+
         User invited = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
 
         if (projectMemberRepository.existsByProjectAndUser(project, invited)) {
-            throw new RuntimeException("User is already a member of this project");
+            ProjectMember existingMember = projectMemberRepository.findByProjectAndUser(project, invited)
+                    .orElseThrow(() -> new RuntimeException("User is already a member of this project"));
+            if (existingMember.isActive()) {
+                throw new RuntimeException("User is already a member of this project");
+            }
+            existingMember.setActive(false);
+            return projectMemberRepository.save(existingMember);
         }
 
         ProjectMember member = new ProjectMember();
         member.setProject(project);
         member.setUser(invited);
         member.setRole(ProjectMemberRole.MEMBER);
+        member.setActive(false);
         return projectMemberRepository.save(member);
+    }
+
+    @Override
+    @Transactional
+    public ProjectMember joinProject(Long projectId, User currentUser) {
+        Project project = getProjectById(projectId);
+        ProjectMember membership = projectMemberRepository.findByProjectAndUser(project, currentUser)
+                .orElseThrow(() -> new RuntimeException("You do not have an invitation to this project"));
+
+        if (membership.isActive()) {
+            return membership;
+        }
+
+        membership.setActive(true);
+        return projectMemberRepository.save(membership);
+    }
+
+    private void ensureCanManage(Project project, User currentUser) {
+        if (currentUser == null || project.getCreatedBy() == null || !currentUser.getId().equals(project.getCreatedBy().getId())) {
+            throw new RuntimeException("You are not allowed to manage this project");
+        }
+    }
+
+    private void ensureCanInvite(Project project, User currentUser) {
+        ensureCanManage(project, currentUser);
     }
 }
