@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskPilot · Tasks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+  <link rel="stylesheet" th:href="@{/css/projects.css}">
+</head>
+<body class="dashboard-page">
+<main class="dashboard-main" style="margin-left:0;max-width:1200px;padding:2rem;margin:auto">
+  <header class="dashboard-topbar"><a class="text-button" href="/dashboard">← Dashboard</a><h1>Task management</h1><a class="text-button" href="/projects">Projects</a></header>
+  <section class="panel card" style="margin-top:1.5rem"><div class="panel-header"><div><p class="panel-label">Create or edit</p><h2 id="formTitle">New task</h2></div></div><div class="panel-content">
+    <form id="taskForm" class="modal-form"><input id="taskId" type="hidden">
+      <div class="form-group"><label>Project</label><select id="projectId" required></select></div>
+      <div class="form-group"><label>Title</label><input id="title" required maxlength="255"></div>
+      <div class="form-group"><label>Description</label><textarea id="description" rows="3"></textarea></div>
+      <div class="invite-row"><div class="form-group"><label>Status</label><select id="status"><option>TODO</option><option>IN_PROGRESS</option><option>REVIEW</option><option>DONE</option></select></div><div class="form-group"><label>Priority</label><select id="priority"><option>LOW</option><option selected>MEDIUM</option><option>HIGH</option><option>URGENT</option></select></div><div class="form-group"><label>Assignee</label><select id="assignedToId"><option value="">Unassigned</option></select></div><div class="form-group"><label>Deadline</label><input id="deadline" type="datetime-local"></div></div>
+      <button class="btn-primary" type="submit">Save task</button> <button class="btn-secondary" id="cancelEdit" type="button">Cancel</button><p id="message"></p>
+    </form></div></section>
+  <section class="panel card" style="margin-top:1.5rem"><div class="panel-header"><div><p class="panel-label">Your projects</p><h2>All tasks</h2></div><select id="filterProject"><option value="">All projects</option></select></div><div class="panel-content table-wrapper"><table class="tasks-table"><thead><tr><th>Task</th><th>Project</th><th>Assignee</th><th>Status</th><th>Priority</th><th>Deadline</th><th></th></tr></thead><tbody id="taskList"></tbody></table></div></section>
+  <section class="panel card" id="detailPanel" hidden style="margin-top:1.5rem"><div class="panel-header"><h2 id="detailTitle">Task details</h2><button class="text-button" id="closeDetail">Close</button></div><div class="panel-content"><h3>Comments</h3><div id="comments"></div><form id="commentForm"><textarea id="commentContent" required placeholder="Write a comment..."></textarea><button class="btn-secondary" type="submit">Comment</button></form><h3 style="margin-top:1.5rem">Activity</h3><ul id="history"></ul></div></section>
+</main><script th:src="@{/js/tasks.js}"></script></body></html>

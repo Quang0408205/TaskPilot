@@ -17,4 +17,12 @@ public interface TaskRepository extends JpaRepository<Task,Long>{
 
     List<Task> findByStatus(TaskStatus status);
 
+    List<Task> findByProjectAndDeletedFalseOrderByPositionAscCreatedAtDesc(Project project);
+
+    List<Task> findByProjectInAndDeletedFalseOrderByUpdatedAtDesc(List<Project> projects);
+
+    long countByProjectInAndDeletedFalse(List<Project> projects);
+
+    long countByProjectInAndStatusAndDeletedFalse(List<Project> projects, TaskStatus status);
+
 }

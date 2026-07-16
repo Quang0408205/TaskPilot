@@ -3,6 +3,7 @@ package com.example.controller;
 import com.example.dto.RegisterRequest;
 import com.example.dto.LoginRequest;
 import com.example.service.AuthService;
+import com.example.dto.AuthResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,7 +27,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest request){
+    public AuthResponse login(@RequestBody LoginRequest request){
         return authService.login(request);
     }
 }

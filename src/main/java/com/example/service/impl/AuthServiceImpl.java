@@ -4,6 +4,8 @@ import com.example.dto.LoginRequest;
 import com.example.dto.RegisterRequest;
 import com.example.entity.User;
 import com.example.repository.UserRepository;
+import com.example.service.JwtService;
+import com.example.dto.AuthResponse;
 import com.example.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +17,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @Override
     public String register(RegisterRequest request) {
@@ -35,7 +38,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String login(LoginRequest request) {
+    public AuthResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -44,6 +47,7 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Wrong password");
         }
 
-        return "Login success";
+        org.springframework.security.core.userdetails.UserDetails principal = org.springframework.security.core.userdetails.User.builder().username(user.getEmail()).password(user.getPassword()).roles("USER").build();
+        return new AuthResponse(jwtService.generateToken(principal), "Bearer", 86400);
     }
 }

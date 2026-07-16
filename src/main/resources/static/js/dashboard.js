@@ -6,8 +6,8 @@ const projectList = document.getElementById('projectList');
 const projectMessage = document.getElementById('projectMessage');
 const projectSubmitButton = document.getElementById('projectSubmitButton');
 
-const projectCountDisplay = document.getElementById('projectCount');
-const inviteCountDisplay = document.getElementById('inviteCount');
+const projectCountDisplay = document.getElementById('summaryTotalProjects');
+const inviteCountDisplay = document.getElementById('summaryTeamMembers');
 
 function setMessage(message, color = '#22c55e') {
   projectMessage.textContent = message;
@@ -39,11 +39,10 @@ function updateOverview(projects) {
     projectCountDisplay.textContent = projects.length;
   }
   if (inviteCountDisplay) {
-    const inviteCount = projects.reduce((count, project) => {
-      const members = project.members || [];
-      return count + members.filter(member => member.role && member.role.toUpperCase() !== 'OWNER').length;
-    }, 0);
-    inviteCountDisplay.textContent = inviteCount;
+    const memberIds = new Set(projects.flatMap(project =>
+      (project.members || []).map(member => member.userId)
+    ));
+    inviteCountDisplay.textContent = memberIds.size;
   }
 }
 
@@ -196,6 +195,7 @@ projectForm.addEventListener('submit', async (event) => {
     setMessage(projectId ? 'Project updated successfully.' : 'Project created successfully.');
     resetProjectForm();
     fetchProjects();
+    window.setTimeout(() => window.location.reload(), 500);
   } catch (error) {
     setMessage(projectId ? 'Update project failed. Please try again.' : 'Create project failed. Please try again.', '#dc2626');
   }

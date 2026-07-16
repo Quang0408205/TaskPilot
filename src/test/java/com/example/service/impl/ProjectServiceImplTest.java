@@ -7,6 +7,8 @@ import com.example.entity.User;
 import com.example.repository.ProjectMemberRepository;
 import com.example.repository.ProjectRepository;
 import com.example.repository.UserRepository;
+import com.example.repository.ActivityLogRepository;
+import com.example.service.NotificationPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +36,9 @@ class ProjectServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock private ActivityLogRepository activityLogRepository;
+    @Mock private NotificationPublisher notificationPublisher;
 
     @InjectMocks
     private ProjectServiceImpl projectService;

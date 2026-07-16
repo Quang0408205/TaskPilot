@@ -38,9 +38,8 @@ public class ProjectController {
                                                      @PathVariable Long projectId) {
         User user = getAuthenticatedUser(currentUser);
         Project project = projectService.getProjectById(projectId);
-        if (!project.getCreatedBy().getId().equals(user.getId())) {
+        if (!projectService.getProjectMembers(project).stream().anyMatch(member -> member.getUser().getId().equals(user.getId())))
             throw new RuntimeException("You are not allowed to view this project");
-        }
         return ResponseEntity.ok(toResponse(project));
     }
 
@@ -108,6 +107,7 @@ public class ProjectController {
     private ProjectMemberResponse toMemberResponse(ProjectMember member) {
         return new ProjectMemberResponse(
                 member.getId(),
+                member.getUser().getId(),
                 member.getUser().getUsername(),
                 member.getUser().getEmail(),
                 member.getRole() != null ? member.getRole().name() : null

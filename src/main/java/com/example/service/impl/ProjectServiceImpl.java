@@ -8,6 +8,9 @@ import com.example.enums.ProjectMemberRole;
 import com.example.repository.ProjectMemberRepository;
 import com.example.repository.ProjectRepository;
 import com.example.repository.UserRepository;
+import com.example.repository.ActivityLogRepository;
+import com.example.entity.ActivityLog;
+import com.example.service.NotificationPublisher;
 import com.example.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,8 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
     private final UserRepository userRepository;
+    private final NotificationPublisher notificationPublisher;
+    private final ActivityLogRepository activityLogRepository;
 
     @Override
     @Transactional
@@ -105,7 +110,11 @@ public class ProjectServiceImpl implements ProjectService {
                 throw new RuntimeException("User is already a member of this project");
             }
             existingMember.setActive(false);
-            return projectMemberRepository.save(existingMember);
+            ProjectMember saved = projectMemberRepository.save(existingMember);
+            notificationPublisher.notify(invited, currentUser.getUsername() + " invited you to join project \"" + project.getName() + "\"");
+            activityLogRepository.save(ActivityLog.builder().project(project).user(currentUser)
+                    .message(currentUser.getUsername() + " re-invited " + invited.getUsername() + " to the project").build());
+            return saved;
         }
 
         ProjectMember member = new ProjectMember();
@@ -113,7 +122,11 @@ public class ProjectServiceImpl implements ProjectService {
         member.setUser(invited);
         member.setRole(ProjectMemberRole.MEMBER);
         member.setActive(false);
-        return projectMemberRepository.save(member);
+        member = projectMemberRepository.save(member);
+        notificationPublisher.notify(invited, currentUser.getUsername() + " invited you to join project \"" + project.getName() + "\"");
+        activityLogRepository.save(ActivityLog.builder().project(project).user(currentUser)
+                .message(currentUser.getUsername() + " invited " + invited.getUsername() + " to the project").build());
+        return member;
     }
 
     @Override
